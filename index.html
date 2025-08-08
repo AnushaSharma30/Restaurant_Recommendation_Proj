@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Recommender</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        h1 {
+            color: #1a73e8;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #5f6368;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        input {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        button {
+            padding: 12px 25px;
+            border: none;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #1558b3;
+        }
+        #results {
+            margin-top: 30px;
+            text-align: left;
+        }
+        .card {
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            animation: fadeIn 0.5s;
+        }
+        .card h3 {
+            margin: 0 0 5px 0;
+            color: #202124;
+        }
+        .card p {
+            margin: 0;
+            color: #5f6368;
+            font-size: 14px;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #1a73e8;
+            animation: spin 1s ease infinite;
+            margin: 30px auto;
+            display: none; /* Hidden by default */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍽️ Restaurant Recommender</h1>
+        <p>Enter a User ID to get personalized restaurant recommendations.</p>
+        <div class="input-group">
+            <input type="number" id="userIdInput" placeholder="e.g., 666">
+            <button onclick="getRecommendations()">Get Recommendations</button>
+        </div>
+        <div class="spinner" id="loadingSpinner"></div>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        async function getRecommendations() {
+            const userId = document.getElementById('userIdInput').value;
+            const resultsDiv = document.getElementById('results');
+            const spinner = document.getElementById('loadingSpinner');
+
+            // --- CRITICAL STEP: Paste your Render API URL here ---
+            // Make sure to keep the `/recommend/` part at the end
+            const API_BASE_URL = "https://recommendation-api-2-3lzc.onrender.com"; 
+
+            if (!userId) {
+                resultsDiv.innerHTML = '<p style="color: red;">Please enter a User ID.</p>';
+                return;
+            }
+
+            // Show spinner and clear previous results
+            spinner.style.display = 'block';
+            resultsDiv.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/recommend/${userId}`);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+                }
+
+                const recommendations = await response.json();
+                displayResults(recommendations);
+
+            } catch (error) {
+                resultsDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+                console.error('Fetch error:', error);
+            } finally {
+                // Hide spinner
+                spinner.style.display = 'none';
+            }
+        }
+
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            if (data.recommendations && data.recommendations.length === 0) {
+                 resultsDiv.innerHTML = `<p>${data.message}</p>`;
+                 return;
+            }
+            if (data.length === 0) {
+                resultsDiv.innerHTML = '<p>No new recommendations found for this user.</p>';
+                return;
+            }
+
+            let htmlContent = '';
+            data.forEach(rec => {
+                htmlContent += `
+                    <div class="card">
+                        <h3>${rec.name}</h3>
+                        <p><strong>City:</strong> ${rec.city} | <strong>Overall Rating:</strong> ${rec.rating}</p>
+                        ${rec.visit_count ? `<p><strong>Tribe Popularity:</strong> ${rec.visit_count} visits, ${rec.avg_rating.toFixed(2)} avg rating</p>` : ''}
+                    </div>
+                `;
+            });
+            resultsDiv.innerHTML = htmlContent;
+        }
+    </script>
+</body>
+</html>
