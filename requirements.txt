@@ -1,8 +1,0 @@
-# requirements.txt
-pandas
-numpy
-SQLAlchemy
-pyodbc
-Flask
-gunicorn
-psycopg2-binary  # <-- ADD THIS LINE
