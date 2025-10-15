@@ -1,0 +1,12 @@
+condition_id,name
+1,None
+2,Diabetes
+3,Hypertension
+4,High Cholesterol
+5,Celiac Disease
+6,Food Allergies
+7,Lactose Intolerance
+8,Kidney Disease
+9,Irritable Bowel Syndrome (IBS)
+10,Gastroesophageal Reflux Disease (GERD)
+11,Gout
